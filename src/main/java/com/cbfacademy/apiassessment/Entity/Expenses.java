@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Data
 @NoArgsConstructor
-@Entity
+@Entity(name = "Expenses")
 @Table(name = "Expenses")
 public class Expenses extends BaseEntity implements Serializable {
     @Column(name = "amount")
