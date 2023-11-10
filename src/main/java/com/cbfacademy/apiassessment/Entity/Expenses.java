@@ -16,10 +16,10 @@ public class Expenses extends BaseEntity implements Serializable {
     private double expenseAmount;
 
     @Column(name = "category")
-    private Category expenseCategory;
+    private SubCategories.Category expenseCategory;
 
     @Column(name = "subcategory", nullable = true)
-    private Subcategory expenseSubcategory;
+    private SubCategories expenseSubcategory;
 
     @Column(name = "description")
     private String description;
@@ -32,7 +32,7 @@ public class Expenses extends BaseEntity implements Serializable {
     @JoinColumn(name = "budget_id")
     private Budget budget; // The budget to which the expense is connected
 
-    public Expenses(double expenseAmount, Category expenseCategory, Subcategory expenseSubcategory, String description){
+    public Expenses(double expenseAmount, SubCategories.Category expenseCategory, SubCategories expenseSubcategory, String description){
         setExpenseAmount(expenseAmount);
         setExpenseCategory(expenseCategory);
         setExpenseSubcategory(expenseSubcategory);
