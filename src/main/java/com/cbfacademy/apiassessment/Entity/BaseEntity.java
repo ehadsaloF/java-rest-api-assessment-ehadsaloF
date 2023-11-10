@@ -20,7 +20,7 @@ public abstract class BaseEntity implements Serializable {
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", updatable = false)
-    private Date createdAt;
+    final private Date createdAt = new Date();
 
     @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
@@ -28,4 +28,7 @@ public abstract class BaseEntity implements Serializable {
     private Date updatedAt;
 
 
+    public void setUpdatedAt() {
+        this.updatedAt = new java.util.Date();
+    }
 }
