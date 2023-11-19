@@ -1,12 +1,8 @@
 package com.cbfacademy.apiassessment.Service;
 
-import com.cbfacademy.apiassessment.DTO.BudgetDTO;
-import com.cbfacademy.apiassessment.DTO.UserDTO;
 import com.cbfacademy.apiassessment.Entity.Budget;
 import com.cbfacademy.apiassessment.Entity.SubCategories;
 import com.cbfacademy.apiassessment.Entity.User;
-import com.cbfacademy.apiassessment.Mappers.BudgetMapper;
-import com.cbfacademy.apiassessment.Mappers.UserMapper;
 import com.cbfacademy.apiassessment.Repository.BudgetRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,22 +24,17 @@ import static org.mockito.Mockito.*;
 
 @DisplayName("The Budget Service")
 public class BudgetServiceTest {
-    @InjectMocks
-    private BudgetService budgetService;
+
 
     @Mock
     private UserService userService;
     @Mock
     private BudgetRepository budgetRepository;
-    @Mock
-    private BudgetMapper budgetMapper;
-    @Mock
-    private UserMapper userMapper;
 
+    @InjectMocks
+    private BudgetService budgetService;
 
     private User user;
-    private UserDTO userDTO;
-
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -55,7 +46,6 @@ public class BudgetServiceTest {
                 email("user@email.com").
                 build();
         user.setId(1L);
-        userDTO = userMapper.userDTO(user);
     }
 
     @Test
@@ -66,22 +56,20 @@ public class BudgetServiceTest {
         Budget inputBudget = new Budget(1000, SubCategories.Category.Food, null, "Food");
         inputBudget.setId(1L);
 
+
         Budget savedBudget = new Budget(1000, SubCategories.Category.Food, null, "Food");
         savedBudget.setUser(user);
         savedBudget.setId(1L);
 
-        BudgetDTO expectedBudgetDTO = new BudgetDTO(1L,1000,"Food",null,"Food",1L);
-
-        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(userDTO);
-        when(userMapper.toUser(userDTO)).thenReturn(user);
+        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(user);
         when(budgetRepository.save(inputBudget)).thenReturn(savedBudget);
 
         // Act
-        BudgetDTO result = budgetService.saveBudget(usernameOrEmail,inputBudget );
+        Budget result = budgetService.saveBudget(usernameOrEmail,inputBudget);
 
         // Assert
         assertNotNull(result);
-        assertEquals(expectedBudgetDTO, result);
+        assertEquals(savedBudget, result);
     }
 
     @ParameterizedTest
@@ -100,47 +88,28 @@ public class BudgetServiceTest {
         updatedBudget.setId(budgetId);
         updatedBudget.setUser(user);
 
-        BudgetDTO expectedBudgetDTO = new BudgetDTO();
-        expectedBudgetDTO.setAmount(1000);
-        expectedBudgetDTO.setCategory("Food");
-        expectedBudgetDTO.setSubcategory(null);
-        expectedBudgetDTO.setDescription("Food");
-        expectedBudgetDTO.setUser_id(user.getId());
-        expectedBudgetDTO.setId(budgetId);
 
         switch (update){
-            case "amount" -> {
-                updatedBudget.setBudgetAmount(Double.parseDouble(value));
-                expectedBudgetDTO.setAmount(Double.parseDouble(value));
-            }
-            case "category" -> {
-                updatedBudget.setBudgetCategory(SubCategories.Category.valueOf(value));
-                expectedBudgetDTO.setCategory(value);
-            }
+            case "amount" -> updatedBudget.setBudgetAmount(Double.parseDouble(value));
+            case "category" -> updatedBudget.setBudgetCategory(SubCategories.Category.valueOf(value));
             case "subcategory" -> {
                 if(value != null) {
                     updatedBudget.setBudgetSubcategory(SubCategories.valueOf(value));
-                    expectedBudgetDTO.setSubcategory(value);
                 }
                 updatedBudget.setBudgetSubcategory(null);
-                expectedBudgetDTO.setSubcategory(null);
             }
-            case "description" -> {
-                updatedBudget.setDescription(value);
-                expectedBudgetDTO.setDescription(value);
-            }
+            case "description" -> updatedBudget.setDescription(value);
         }
 
-        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(userDTO);
-        when(userMapper.toUser(userDTO)).thenReturn(user);
+        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(user);
         when(budgetRepository.findByUserAndId(user, budgetId)).thenReturn(java.util.Optional.of(existingBudget));
         when(budgetRepository.save(any(Budget.class))).thenReturn(updatedBudget);
 
         // Act
-        BudgetDTO result = budgetService.updateBudgetByID(usernameOrEmail, budgetId, update, value);
+        Budget result = budgetService.updateBudgetByID(usernameOrEmail, budgetId, update, value);
 
         // Assert
-        assertEquals(expectedBudgetDTO, result);
+        assertEquals(updatedBudget, result);
     }
 
     private static Stream<Object[]> DiffScenarios() {
@@ -158,30 +127,22 @@ public class BudgetServiceTest {
     void testGetBudgetByID() {
         // Arrange
         String usernameOrEmail = "user@email.com";
-        Long budgetId = 1L;
+        long budgetId = 1L;
 
         Budget savedBudget1 = new Budget(90, SubCategories.Category.Food, null, "Food");
         savedBudget1.setUser(user);
         savedBudget1.setId(1L);
 
-        BudgetDTO expectedBudgetDTO = new BudgetDTO();
-        expectedBudgetDTO.setAmount(90);
-        expectedBudgetDTO.setCategory("Food");
-        expectedBudgetDTO.setSubcategory(null);
-        expectedBudgetDTO.setDescription("Food");
-        expectedBudgetDTO.setUser_id(user.getId());
-        expectedBudgetDTO.setId(budgetId);
 
-        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(userDTO);
-        when(userMapper.toUser(userDTO)).thenReturn(user);
+        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(user);
         when(budgetRepository.findByUserAndId(user, budgetId)).thenReturn(java.util.Optional.of(savedBudget1));
 
         // Act
-        BudgetDTO result = budgetService.getBudgetById(usernameOrEmail, budgetId);
+        Budget result = budgetService.getBudgetById(usernameOrEmail, budgetId);
 
         // Assert
         assertNotNull(result);
-        assertEquals(expectedBudgetDTO, result);
+        assertEquals(savedBudget1, result);
     }
 
     @Test
@@ -198,27 +159,20 @@ public class BudgetServiceTest {
         savedBudget2.setUser(user);
         savedBudget2.setId(2L);
 
-        BudgetDTO BudgetDTO1 = new BudgetDTO(1L, 90, "Food", null, "Food", user.getId());
-
-        BudgetDTO BudgetDTO2 = new BudgetDTO(2L, 40, "Savings", "Basic", "From Weekend Bar Shift", user.getId());
 
 
         List<Budget> budgetList = Arrays.asList(savedBudget1, savedBudget2);
-        List<BudgetDTO> budgetDTOList = Arrays.asList(BudgetDTO1, BudgetDTO2);
 
 
-        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(userDTO);
-        when(userMapper.toUser(userDTO)).thenReturn(user);
+        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(user);
         when(budgetRepository.findByUser(user)).thenReturn(java.util.Optional.of(budgetList));
-        when(budgetMapper.budgetDTO(savedBudget1)).thenReturn(BudgetDTO1);
-        when(budgetMapper.budgetDTO(savedBudget2)).thenReturn(BudgetDTO2);
 
         // Act
-        List<BudgetDTO> result = budgetService.getAllBudgets(usernameOrEmail);
+        List<Budget> result = budgetService.getAllBudgets(usernameOrEmail);
 
         // Assert
         assertNotNull(result);
-        assertEquals(budgetDTOList, result);
+        assertEquals(budgetList, result);
     }
 
     @Test
@@ -239,28 +193,18 @@ public class BudgetServiceTest {
         savedBudget3.setUser(user);
         savedBudget3.setId(3L);
 
-        BudgetDTO BudgetDTO1 = new BudgetDTO(1L, 90, "Food", null, "Food", user.getId());
-
-        BudgetDTO BudgetDTO3 = new BudgetDTO(3L, 20, "Food", "Restaurant", "KFC", user.getId());
-
-
-
-        List<BudgetDTO> ansbudgetDTOList = Arrays.asList(BudgetDTO1, BudgetDTO3);
 
         List<Budget> ansBudgetList = Arrays.asList(savedBudget1, savedBudget3);
 
-        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(userDTO);
-        when(userMapper.toUser(userDTO)).thenReturn(user);
+        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(user);
         when(budgetRepository.findByUserIdAndBudgetCategory(user.getId(), SubCategories.Category.Food)).thenReturn(ansBudgetList);
-        when(budgetMapper.budgetDTO(savedBudget1)).thenReturn(BudgetDTO1);
-        when(budgetMapper.budgetDTO(savedBudget3)).thenReturn(BudgetDTO3);
 
         // Act
-        List<BudgetDTO> result = budgetService.getBudgetsByCategory(usernameOrEmail, "Food");
+        List<Budget> result = budgetService.getBudgetsByCategory(usernameOrEmail, "Food");
 
         // Assert
         assertNotNull(result);
-        assertEquals(ansbudgetDTOList, result);
+        assertEquals(ansBudgetList, result);
     }
 
     @Test
@@ -281,27 +225,18 @@ public class BudgetServiceTest {
         savedBudget3.setUser(user);
         savedBudget3.setId(3L);
 
-        BudgetDTO BudgetDTO2 = new BudgetDTO(2L, 40, "Savings", "Basic", "From Weekend Bar Shift", user.getId());
-
-        BudgetDTO BudgetDTO3 = new BudgetDTO(3L, 20, "Food", "Restaurant", "KFC", user.getId());
-
-
-        List<BudgetDTO> budgetDTOList = Arrays.asList( BudgetDTO2, BudgetDTO3);
 
         List<Budget> ansBudgetList = Arrays.asList(savedBudget2, savedBudget3);
 
-        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(userDTO);
-        when(userMapper.toUser(userDTO)).thenReturn(user);
+        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(user);
         when(budgetRepository.findBudgetsInPriceRange(user, 10, 100)).thenReturn(ansBudgetList);
-        when(budgetMapper.budgetDTO(savedBudget2)).thenReturn(BudgetDTO2);
-        when(budgetMapper.budgetDTO(savedBudget3)).thenReturn(BudgetDTO3);
 
         // Act
-        List<BudgetDTO> result = budgetService.getBudgetsInPriceRange(usernameOrEmail, 10, 100);
+        List<Budget> result = budgetService.getBudgetsInPriceRange(usernameOrEmail, 10, 100);
 
         // Assert
         assertNotNull(result);
-        assertEquals(budgetDTOList, result);
+        assertEquals(ansBudgetList, result);
     }
 
     @Test
@@ -322,27 +257,19 @@ public class BudgetServiceTest {
         savedBudget3.setUser(user);
         savedBudget3.setId(3L);
 
-        BudgetDTO BudgetDTO1 = new BudgetDTO(1L, 190, "Food", null, "Food", user.getId());
 
-        BudgetDTO BudgetDTO2 = new BudgetDTO(2L, 40, "Savings", "Basic", "From Weekend Bar Shift", user.getId());
-
-
-        List<BudgetDTO> budgetDTOList = Arrays.asList( BudgetDTO1, BudgetDTO2);
 
         List<Budget> ansBudgetList = Arrays.asList(savedBudget1, savedBudget2);
 
-        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(userDTO);
-        when(userMapper.toUser(userDTO)).thenReturn(user);
+        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(user);
         when(budgetRepository.findBudgetsGreaterThan(user, 10)).thenReturn(ansBudgetList);
-        when(budgetMapper.budgetDTO(savedBudget1)).thenReturn(BudgetDTO1);
-        when(budgetMapper.budgetDTO(savedBudget2)).thenReturn(BudgetDTO2);
 
         // Act
-        List<BudgetDTO> result = budgetService.getBudgetsGreaterThan(usernameOrEmail, 10);
+        List<Budget> result = budgetService.getBudgetsGreaterThan(usernameOrEmail, 10);
 
         // Assert
         assertNotNull(result);
-        assertEquals(budgetDTOList, result);
+        assertEquals(ansBudgetList, result);
     }
 
     @Test
@@ -363,27 +290,17 @@ public class BudgetServiceTest {
         savedBudget3.setUser(user);
         savedBudget3.setId(3L);
 
-        BudgetDTO BudgetDTO2 = new BudgetDTO(2L, 40, "Savings", "Basic", "From Weekend Bar Shift", user.getId());
-
-        BudgetDTO BudgetDTO3 = new BudgetDTO(3L, 20, "Food", "Restaurant", "KFC", user.getId());
-
-
-        List<BudgetDTO> budgetDTOList = Arrays.asList( BudgetDTO2, BudgetDTO3);
-
         List<Budget> ansBudgetList = Arrays.asList(savedBudget2, savedBudget3);
 
-        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(userDTO);
-        when(userMapper.toUser(userDTO)).thenReturn(user);
+        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(user);
         when(budgetRepository.findBudgetsLessThan(user, 50)).thenReturn(ansBudgetList);
-        when(budgetMapper.budgetDTO(savedBudget2)).thenReturn(BudgetDTO2);
-        when(budgetMapper.budgetDTO(savedBudget3)).thenReturn(BudgetDTO3);
 
         // Act
-        List<BudgetDTO> result = budgetService.getBudgetsLessThan(usernameOrEmail, 50);
+        List<Budget> result = budgetService.getBudgetsLessThan(usernameOrEmail, 50);
 
         // Assert
         assertNotNull(result);
-        assertEquals(budgetDTOList, result);
+        assertEquals(ansBudgetList, result);
     }
 
     @ParameterizedTest
@@ -405,37 +322,25 @@ public class BudgetServiceTest {
         savedBudget3.setUser(user);
         savedBudget3.setId(3L);
 
-        BudgetDTO BudgetDTO1 = new BudgetDTO(1L, 190, "Food", null, "Food", user.getId());
-
-        BudgetDTO BudgetDTO2 = new BudgetDTO(2L, 40, "Savings", "Basic", "From Weekend Bar Shift", user.getId());
-
-        BudgetDTO BudgetDTO3 = new BudgetDTO(3L, 20, "Food", "Restaurant", "KFC", user.getId());
-
 
 
         List<Budget> budgetList = Arrays.asList(savedBudget1, savedBudget2, savedBudget3);
-        List<BudgetDTO> budgetDTOList = Arrays.asList( BudgetDTO1, BudgetDTO2, BudgetDTO3) ;
 
 
         switch (sortBy){
-            case "amount" -> budgetDTOList = Arrays.asList( BudgetDTO3, BudgetDTO2, BudgetDTO1);
-            case "category" -> budgetDTOList = Arrays.asList( BudgetDTO1, BudgetDTO3, BudgetDTO2);
-            case "subcategory" -> budgetDTOList = Arrays.asList( BudgetDTO1, BudgetDTO2, BudgetDTO3);
+            case "amount" -> budgetList = Arrays.asList( savedBudget3, savedBudget2, savedBudget1);
+            case "category" -> budgetList = Arrays.asList( savedBudget1, savedBudget3, savedBudget2);
+            case "subcategory" -> budgetList = Arrays.asList( savedBudget1, savedBudget2, savedBudget3);
         }
 
-        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(userDTO);
-        when(userMapper.toUser(userDTO)).thenReturn(user);
+        when(userService.getUserByUsernameOrEmail(usernameOrEmail)).thenReturn(user);
         when(budgetRepository.findByUser(user)).thenReturn(Optional.of(budgetList));
-        when(budgetMapper.budgetDTO(savedBudget1)).thenReturn(BudgetDTO1);
-        when(budgetMapper.budgetDTO(savedBudget2)).thenReturn(BudgetDTO2);
-        when(budgetMapper.budgetDTO(savedBudget3)).thenReturn(BudgetDTO3);
-
 
         // Act
-        List<BudgetDTO> result = budgetService.sortBudgetsBy(usernameOrEmail, sortBy);
+        List<Budget> result = budgetService.sortBudgetsBy(usernameOrEmail, sortBy);
 
         // Assert
-        assertEquals(budgetDTOList, result);
+        assertEquals(budgetList, result);
     }
 
     private static Stream<String> DiffSortScenarios() {
@@ -454,8 +359,7 @@ public class BudgetServiceTest {
 
 
         when(budgetRepository.findByUserAndId(user, 1L)).thenReturn(Optional.of(savedBudget1));
-        when(userService.getUserByUsernameOrEmail(user.getEmail())).thenReturn(userDTO);
-        when(userMapper.toUser(userDTO)).thenReturn(user);
+        when(userService.getUserByUsernameOrEmail(user.getEmail())).thenReturn(user);
         doNothing().when(budgetRepository).delete(savedBudget1);
 
         assertAll(() -> budgetService.deleteBudget(user.getEmail(), 1L));

@@ -2,9 +2,7 @@ package com.cbfacademy.apiassessment.Service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.cbfacademy.apiassessment.DTO.UserDTO;
 import com.cbfacademy.apiassessment.Entity.User;
-import com.cbfacademy.apiassessment.Mappers.UserMapper;
 import com.cbfacademy.apiassessment.Repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,8 +24,6 @@ public class UserServiceTest {
     private UserService userService;
     @Mock
     private UserRepository userRepository;
-    @Mock
-    private UserMapper userMapper;
 
     @BeforeEach
     void setUp() {
@@ -43,7 +39,7 @@ public class UserServiceTest {
         when(userRepository.save(any(User.class))).thenReturn(newUser);
 
         // Act
-        UserDTO createdUser = userService.saveUser(newUser);
+        User createdUser = userService.saveUser(newUser);
 
         // Assert
         assertNotNull(createdUser);
@@ -72,7 +68,7 @@ public class UserServiceTest {
         });
 
         // Act
-        UserDTO updatedUser = userService.updateUser(usernameOrEmail, newName);
+        User updatedUser = userService.updateUser(usernameOrEmail, newName);
 
         // Assert
         assertEquals(newName, updatedUser.getName());
@@ -83,17 +79,16 @@ public class UserServiceTest {
     void testGetUserByEmail() {
         String usernameOrEmail = "example@email.com";
 
-        User existingUser = User.builder().username("newUser").email("example@email.com").name("Hame").build();
-        UserDTO existingUserDTO = UserDTO.builder().username("newUser").email("example@email.com").name("Hame").build();
+        User existingUser = User.builder().username("newUser").email("example@email.com").name("Ham").build();
 
         when(userRepository.findByEmail(usernameOrEmail)).thenReturn(Optional.ofNullable(existingUser));
 
 
         // Act
-        UserDTO userDTO = userService.getUserByUsernameOrEmail(usernameOrEmail);
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
 
         // Assert
-        assertEquals(existingUserDTO, userDTO);
+        assertEquals(existingUser, user);
     }
 
     @Test
@@ -101,17 +96,15 @@ public class UserServiceTest {
     void testGetUserByUsername() {
         String usernameOrEmail = "newUser";
 
-        User existingUser = User.builder().username("newUser").email("example@email.com").name("Hame").build();
-        UserDTO existingUserDTO = UserDTO.builder().username("newUser").email("example@email.com").name("Hame").build();
+        User existingUser = User.builder().username("newUser").email("example@email.com").name("Ham").build();
 
         when(userRepository.findByUsername(usernameOrEmail)).thenReturn(Optional.ofNullable(existingUser));
 
-
         // Act
-        UserDTO userDTO = userService.getUserByUsernameOrEmail(usernameOrEmail);
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
 
         // Assert
-        assertEquals(existingUserDTO, userDTO);
+        assertEquals(existingUser, user);
     }
 
     @Test
@@ -129,31 +122,18 @@ public class UserServiceTest {
                 email( "user2@example.com").
                 build();
 
-        UserDTO userDto1 = UserDTO.builder().
-                name("User One").
-                username("user1").
-                email("user1@example.com").
-                build();
-        UserDTO userDto2 = UserDTO.builder().
-                name("User Two").
-                username("user2").
-                email("user2@example.com").
-                build();
 
         List<User> userList = Arrays.asList(user1, user2);
-        List<UserDTO> userDtoList = Arrays.asList(userDto1, userDto2);
 
         when(userRepository.findAll()).thenReturn(userList);
-        when(userMapper.userDTO(user1)).thenReturn(userDto1);
-        when(userMapper.userDTO(user2)).thenReturn(userDto2);
 
         // Act
-        List<UserDTO> result = userService.getAllUsers();
+        List<User> result = userService.getAllUsers();
 
         // Assert
         assertNotNull(result);
-        assertEquals(userDtoList.size(), result.size());
-        assertEquals(result, userDtoList);
+        assertEquals(userList.size(), result.size());
+        assertEquals(result, userList);
     }
 
     @Test
