@@ -60,3 +60,7 @@ build/
 
 ### macOS ###
 .DS_Store
+
+
+# Exclude application properties
+application.properties
