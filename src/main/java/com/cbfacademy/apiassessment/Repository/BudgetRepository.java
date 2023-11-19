@@ -20,8 +20,21 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
     @Query("SELECT b FROM Budget b WHERE b.user = :user AND b.budgetAmount BETWEEN :minPrice AND :maxPrice")
     List<Budget> findBudgetsInPriceRange(User user, double minPrice, double maxPrice);
 
+    @Query("SELECT b FROM Budget b WHERE b.user = :user AND b.budgetAmount > :minPrice")
+    List<Budget> findBudgetsGreaterThan(User user, double minPrice);
+
+    @Query("SELECT b FROM Budget b WHERE b.user = :user AND b.budgetAmount < :maxPrice")
+    List<Budget> findBudgetsLessThan(User user,double maxPrice);
+
     @Query("SELECT b FROM Budget b WHERE b.user = :user AND b.createdAt BETWEEN :startDate AND :endDate")
     List<Budget> findBudgetsByDateRange(User user, Date startDate, Date endDate);
+
+    @Query("SELECT b FROM Budget b WHERE b.user = :user AND b.createdAt < :endDate")
+    List<Budget> findBudgetsBefore(User user, Date endDate);
+
+    @Query("SELECT b FROM Budget b WHERE b.user = :user AND b.createdAt > :startDate")
+    List<Budget> findBudgetsAfter(User user, Date startDate);
+
 
 
 }
