@@ -41,11 +41,12 @@ spring.datasource.password=your_mysql_password
 
 The API will be accessible at `http://localhost:8080/swagger-ui/index.html#/`.
 
-## Schema Overview
-
-
+## Data Overview
 
 ### Entities
+The diagram below shows how the three main entities are connected.
+
+![Entity Relationship Diagram](https://github.com/cbfacademy/java-rest-api-assessment-ehadsaloF/blob/main/Blank%20diagram-5.png)
 
 #### 1. Base Entity
 
@@ -236,59 +237,59 @@ The User Controller in the Personal Finance API manages user-specific operations
 The Budget Controller in the Personal Finance API provides endpoints for managing budget-related operations. This includes creating, updating, retrieving, and deleting budgets for a user.
 
 #### - Create a Budget - POST
-- **Endpoint:** /PF/user/{usernameOrEmail}/budget/create
+- **Endpoint:** `/PF/user/{usernameOrEmail}/budget/create`
 - **Description:** Creates a new budget for the specified user with the provided details.
 
 #### - Update a Budget - PATCH
-- **Endpoint:** /PF/user/{usernameOrEmail}/budget/update/{budgetId}
+- **Endpoint:** `/PF/user/{usernameOrEmail}/budget/update/{budgetId}`
 - **Description:** Updates the specified budget details(amount, category, subcategory, description, or budget)for the user based on the provided parameters.
 
 #### - Get a Budget by ID - GET
-- **Endpoint:** /PF/user/{usernameOrEmail}/budget/getByID/{budgetId}
+- **Endpoint:** `/PF/user/{usernameOrEmail}/budget/getByID/{budgetId}`
 - **Description:** Retrieves a budget with the specified ID.
 
 #### - Get a Budget by Category - GET
-- **Endpoint:** /PF/user/{usernameOrEmail}/budget/getByCat/{category}
+- **Endpoint:** `/PF/user/{usernameOrEmail}/budget/getByCat/{category}`
 - **Description:** Retrieves a list of budgets with the specified category.
 
 #### - Get Budgets within a Price Range - GET
-- **Endpoint:** /PF/user/{usernameOrEmail}/budget/getByAmount
+- **Endpoint:** `/PF/user/{usernameOrEmail}/budget/getByAmount`
 - **Description:** Retrieves a list of budgets within the specified price range.
 
 #### - Get Budgets Greater than an Amount - GET
-- **Endpoint:** /PF/user/{usernameOrEmail}/budget/getByAmount/>
+- **Endpoint:** `/PF/user/{usernameOrEmail}/budget/getByAmount/>`
 - **Description:** Retrieves a list of budgets greater than the specified amount.
 
 #### - Get Budgets Less than an Amount - GET
-- **Endpoint:** /PF/user/{usernameOrEmail}/budget/getByAmount/<
+- **Endpoint:** `/PF/user/{usernameOrEmail}/budget/getByAmount/<`
 - **Description:** Retrieves a list of budgets less than the specified amount.
 
 #### - Get Budgets Created within a Date Range - GET
-- **Endpoint:** /PF/user/{usernameOrEmail}/budget/getByDate
+- **Endpoint:** `/PF/user/{usernameOrEmail}/budget/getByDate`
 - **Description:** Retrieves a list of budgets created within the specified date range.
 
 #### - Get Budgets Created Before a Date - GET
-- **Endpoint:** /PF/user/{usernameOrEmail}/budget/getByDate/before
+- **Endpoint:** `/PF/user/{usernameOrEmail}/budget/getByDate/before`
 - **Description:** Retrieves a list of budgets created before the specified date.
 
 #### - Get Budgets Created After a Date - GET
-- **Endpoint:** /PF/user/{usernameOrEmail}/budget/getByDate/after
+- **Endpoint:** `/PF/user/{usernameOrEmail}/budget/getByDate/after`
 - **Description:** Retrieves a list of budgets created after the specified date.
 
 #### - Get All Budgets - GET
-- **Endpoint:** /PF/user/{usernameOrEmail}/budget/getAll
+- **Endpoint:** `/PF/user/{usernameOrEmail}/budget/getAll`
 - **Description:** Retrieves a list of all budgets for the user.
 
 #### - Get All Budgets as JSON - GET
-- **Endpoint:** /PF/user/{usernameOrEmail}/budget/getAll/download
+- **Endpoint:** `/PF/user/{usernameOrEmail}/budget/getAll/download`
 - **Description:** Initiates the download of a JSON file containing information about all budgets for the user.
 
 #### - Sort Budgets by Specified Criteria - GET
-- **Endpoint:** /PF/user/{usernameOrEmail}/budget/sort/{sortBy}
+- **Endpoint:**`/PF/user/{usernameOrEmail}/budget/sort/{sortBy}`
 - **Description:** Retrieves a sorted list of budgets based on the specified criteria (amount, category, subcategory, or date).
 
 #### - Delete Budget - DELETE
-- **Endpoint:** /PF/user/{usernameOrEmail}/budget/delete/{budgetId}
+- **Endpoint:** `/PF/user/{usernameOrEmail}/budget/delete/{budgetId}`
 - **Description:** Deletes the specified budget.
 
 #### _Error Handling_
@@ -298,7 +299,7 @@ The Budget Controller in the Personal Finance API provides endpoints for managin
 - **_500_ Internal Server Error:** If an error occurs while processing a request.
 
 
-### 3. Expenses Controller
+### 4. Expenses Controller
 
 The Expenses Controller in the Personal Finance API manages operations related to user expenses, allowing users to create, update, retrieve, and delete expenses. Additionally, users can retrieve expense details based on various criteria, such as category, amount range, date range, and more.
 
@@ -374,4 +375,25 @@ The Expenses Controller in the Personal Finance API manages operations related t
 
 - **_500_ Internal Server Error:** If an error occurs while processing the request.
 
-- 
+
+
+## Future Recommendation
+
+The Personal Finance API has been designed to create budgets and tracking expenses. 
+Recommendations for future versions.
+
+#### 1. **Authentication and Authorization:**
+   - Implement robust authentication mechanisms (e.g., OAuth 2.0) to ensure secure user access.
+   - Integrate role-based authorization to control user permissions and access levels.
+
+#### 2. **User-Friendly Interfaces:**
+   - Develop intuitive and responsive user interfaces (web or mobile) to improve user experience.
+   - Incorporate data visualization tools to provide users with clear insights into their financial data.
+
+#### 3. **Notification System:**
+   - Implement a notification system to alert users about budget milestones, overspending, or upcoming bills.
+   - Allow users to set custom notifications based on their preferences.
+
+#### 4. **Multi-Currency Support:**
+   - Incorporate support for multiple currencies to cater to users with diverse financial portfolios.
+   - Allow users to set a primary currency and convert transactions for accurate reporting.
