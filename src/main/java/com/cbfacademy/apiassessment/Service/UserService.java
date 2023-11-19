@@ -1,11 +1,13 @@
 package com.cbfacademy.apiassessment.Service;
 
+import com.cbfacademy.apiassessment.DTO.UserDTO;
 import com.cbfacademy.apiassessment.Entity.User;
 import com.cbfacademy.apiassessment.Entity.UserRoles;
+import com.cbfacademy.apiassessment.Mappers.UserMapper;
 import com.cbfacademy.apiassessment.Repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
@@ -14,20 +16,31 @@ import com.google.gson.Gson;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserService implements IUserService{
 
     @Autowired
     UserRepository userRepository;
+
+    UserMapper userMapper;
+
+
+    /**
+     * Saves a new user if the provided email and username do not already exist
+     * Assigns the role USER to the new user
+     *
+     * @param user The user to be saved
+     * @return The saved user
+     * @throws EntityExistsException If a user with the same email or username already exists
+     */
     @Override
-    // save User
-    public User saveUser(User user) throws EntityExistsException{
+    public UserDTO saveUser(User user)
+            throws EntityExistsException{
         if(userRepository.findByEmail(user.getEmail()).isPresent()){
             throw new EntityExistsException("User with email: " + user.getEmail() + " already exist");
         }
@@ -35,26 +48,43 @@ public class UserService implements IUserService{
             throw new EntityExistsException("User with username: " + user.getUsername() + " already exist");
         }
         user.setRole(UserRoles.USER);
-        return userRepository.save(user);
+        return userMapper.INSTANCE.userDTO(userRepository.save(user));
     }
 
+
+    /**
+     * Updates the name of a user identified by the provided username or email
+     *
+     * @param usernameOrEmail The username or email of the user to be updated
+     * @param name The new name to set
+     * @return The updated user
+     * @throws EntityNotFoundException If the user does not exist
+     */
     @Override
-    public User updateUser(String usernameOrEmail, String name) throws EntityNotFoundException {
-        Optional<User> optionalUserEntity = getUserByUsernameOrEmail(usernameOrEmail);
-        User existingUser = optionalUserEntity.orElse(null);
+    public UserDTO updateUser(String usernameOrEmail, String name)
+            throws EntityNotFoundException {
+        UserDTO userDTO = getUserByUsernameOrEmail(usernameOrEmail);
+        User existingUser = userMapper.INSTANCE.toUser(userDTO);
             if (existingUser != null) {
                 // Update the existing user with the new data
                 existingUser.setName(name);
                 existingUser.setUpdatedAt();
-                return userRepository.save(existingUser);
+                return userMapper.INSTANCE.userDTO(userRepository.save(existingUser));
             }
             throw new EntityNotFoundException("User Does Not Exist");
     }
 
 
+    /**
+     * Gets a user by username or email.
+     *
+     * @param usernameOrEmail The username or email of the user
+     * @return the user
+     * @throws EntityNotFoundException If the user does not exist
+     */
     @Override
-    // find by username, if it's null, find by email
-    public Optional<User> getUserByUsernameOrEmail(String usernameOrEmail) throws EntityNotFoundException{
+    public UserDTO getUserByUsernameOrEmail(String usernameOrEmail)
+            throws EntityNotFoundException{
         Optional<User> existingUser = userRepository.findByUsername(usernameOrEmail);
 
         if (existingUser.isEmpty()) {
@@ -64,12 +94,22 @@ public class UserService implements IUserService{
             throw new EntityNotFoundException("User Does Not Exist");
         }
 
-        return existingUser;
+        return userMapper.INSTANCE.userDTO(existingUser.orElse(null));
     }
 
+
+    /**
+     * Retrieves all users and writes them to a JSON file.
+     *
+     * @throws IOException If an error occurs while generating the file.
+     * @throws EntityNotFoundException If no users are found
+     */
     @Override
-    public void getAllUsersAsJSONFile() throws IOException {
+    public void getAllUsersAsJSONFile() throws IOException, EntityNotFoundException {
         List<User> userList = userRepository.findAll();
+        if(userList.isEmpty()) throw new EntityNotFoundException("No Users Found");
+
+
         String outputFile = "src/main/resources/AllUsers.JSON";
         Gson gson = new Gson();
 
@@ -88,17 +128,35 @@ public class UserService implements IUserService{
 
     }
 
+
+    /**
+     * Retrieves all users.
+     *
+     * @return A list of all users.
+     * @throws EntityNotFoundException - If no users are found
+     */
     @Override
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDTO> getAllUsers() throws EntityNotFoundException {
+        List<User> users = userRepository.findAll();
+        if(users.isEmpty()) throw new EntityNotFoundException("No Users Found");
+        return users.stream().
+                map(userMapper::userDTO).
+                collect(Collectors.toList());
     }
 
+
+    /**
+     * Deletes a user identified by the provided username or email.
+     *
+     * @param usernameOrEmail The username or email of the user to be deleted.
+     * @throws EntityNotFoundException If the user does not exist.
+     */
     @Override
     public void deleteUser(String usernameOrEmail) throws EntityNotFoundException{
-        Optional<User> optionalUserEntity = getUserByUsernameOrEmail(usernameOrEmail);
-        if(optionalUserEntity == null){
+        User user = userMapper.INSTANCE.toUser(getUserByUsernameOrEmail(usernameOrEmail));
+        if(user == null){
             throw new EntityNotFoundException("User Does not Exist");
         }
-        optionalUserEntity.ifPresent(existingUser -> userRepository.delete(existingUser));
+        userRepository.delete(user);
     }
 }
