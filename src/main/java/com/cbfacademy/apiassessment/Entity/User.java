@@ -45,12 +45,10 @@ public class User extends BaseEntity implements Serializable {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Expenses> expenses;
 
-    public User(String name, String username, String email, UserRoles role, String rawPassword) {
+    public User(String name, String username, String email) {
         this.name = name;
         this.username = username;
         this.email = email;
-        this.role = role;
-        this.rawPassword = rawPassword;
     }
 
     public String toString() {
