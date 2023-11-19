@@ -33,7 +33,6 @@ public class BudgetService implements IBudgetService{
 
     BudgetMapper budgetMapper;
 
-    UserMapper userMapper;
 
 
 
@@ -41,20 +40,19 @@ public class BudgetService implements IBudgetService{
      * Saves a new budget for the specified user
      *
      * @param usernameOrEmail The username or email of the user
-     * @param budget          The budget to be saved
+     * @param budget         The budget to be saved
      * @return The saved budget
      * @throws EntityNotFoundException If the user does not exist
      * @throws ValidationException If the Budget parameters are not valid
      */
     @Override
-    public BudgetDTO saveBudget(String usernameOrEmail, Budget budget) throws EntityNotFoundException, ValidationException {
+    public Budget saveBudget(String usernameOrEmail, Budget budget) throws EntityNotFoundException, ValidationException {
 
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot Create Budget");
         }
-
         // Set the user for the budget
         budget.setUser(user);
 
@@ -74,7 +72,7 @@ public class BudgetService implements IBudgetService{
         }
 
         // Save the budget to the repository
-        return budgetMapper.INSTANCE.budgetDTO(budgetRepository.save(budget));
+        return budgetRepository.save(budget);
     }
 
 
@@ -90,10 +88,10 @@ public class BudgetService implements IBudgetService{
      * @throws EntityNotFoundException If the user or budget does not exist
      */
     @Override
-    public BudgetDTO updateBudgetByID(String usernameOrEmail, long budgetId, String update, String value)
+    public Budget updateBudgetByID(String usernameOrEmail, long budgetId, String update, String value)
             throws ValidationException, EntityNotFoundException {
         // Get the user by username or email
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot Update Budget");
         }
@@ -127,7 +125,7 @@ public class BudgetService implements IBudgetService{
 
         budget.setUpdatedAt();
 
-        return budgetMapper.INSTANCE.budgetDTO(budgetRepository.save(budget));
+        return budgetRepository.save(budget);
     }
 
 
@@ -140,9 +138,9 @@ public class BudgetService implements IBudgetService{
      * @throws EntityNotFoundException If the user or budget does not exist
      */
     @Override
-    public BudgetDTO getBudgetById(String usernameOrEmail, long budgetId) throws EntityNotFoundException {
+    public Budget getBudgetById(String usernameOrEmail, long budgetId) throws EntityNotFoundException {
 
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot Get Budget");
         }
@@ -152,7 +150,7 @@ public class BudgetService implements IBudgetService{
             throw new EntityNotFoundException("Budget Does Not Exist");
         }
 
-        return budgetMapper.INSTANCE.budgetDTO(existingBudget.get());
+        return existingBudget.get();
     }
 
 
@@ -164,9 +162,9 @@ public class BudgetService implements IBudgetService{
      * @throws EntityNotFoundException If the user does not exist
      */
     @Override
-    public List<BudgetDTO> getAllBudgets(String usernameOrEmail) throws EntityNotFoundException {
+    public List<Budget> getAllBudgets(String usernameOrEmail) throws EntityNotFoundException {
 
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot Get Budget");
         }
@@ -176,9 +174,7 @@ public class BudgetService implements IBudgetService{
             throw new EntityNotFoundException("User has not created any budgets");
         }
 
-        return existingBudget.get().stream()
-                .map(budgetMapper::budgetDTO)
-                .collect(Collectors.toList());
+        return existingBudget.get();
     }
 
 
@@ -192,9 +188,9 @@ public class BudgetService implements IBudgetService{
      * @throws ValidationException If the category is not valid
      */
     @Override
-    public List<BudgetDTO> getBudgetsByCategory(String usernameOrEmail, String category)
+    public List<Budget> getBudgetsByCategory(String usernameOrEmail, String category)
             throws EntityNotFoundException, ValidationException {
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if(user == null){
             throw new EntityNotFoundException("User Does Not Exist, Cannot Get Budget");
         }
@@ -205,9 +201,7 @@ public class BudgetService implements IBudgetService{
         if (existingBudget.isEmpty()) {
             throw new EntityNotFoundException("Budget with Category"+ category +" Does Not Exist");
         }
-        return existingBudget.stream()
-                .map(budgetMapper::budgetDTO)
-                .collect(Collectors.toList());
+        return existingBudget;
     }
 
 
@@ -222,10 +216,10 @@ public class BudgetService implements IBudgetService{
      * @throws ValidationException If the minPrice or maxPrice is not valid
      */
     @Override
-    public List<BudgetDTO> getBudgetsInPriceRange(String usernameOrEmail, double minPrice, double maxPrice)
+    public List<Budget> getBudgetsInPriceRange(String usernameOrEmail, double minPrice, double maxPrice)
             throws EntityNotFoundException, ValidationException {
 
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot Get Budget");
         }
@@ -244,15 +238,13 @@ public class BudgetService implements IBudgetService{
         }
 
 
-        return existingBudget.get().stream().
-                map(budgetMapper::budgetDTO).
-                collect(Collectors.toList());
+        return existingBudget.get();
     }
     @Override
-    public List<BudgetDTO> getBudgetsGreaterThan(String usernameOrEmail, double minPrice)
+    public List<Budget> getBudgetsGreaterThan(String usernameOrEmail, double minPrice)
             throws EntityNotFoundException, ValidationException {
 
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot Get Budget");
         }
@@ -271,16 +263,14 @@ public class BudgetService implements IBudgetService{
         }
 
 
-        return existingBudget.stream().
-                map(budgetMapper::budgetDTO).
-                collect(Collectors.toList());
+        return existingBudget;
     }
 
     @Override
-    public List<BudgetDTO> getBudgetsLessThan(String usernameOrEmail, double maxPrice)
+    public List<Budget> getBudgetsLessThan(String usernameOrEmail, double maxPrice)
             throws EntityNotFoundException, ValidationException {
 
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot Get Budget");
         }
@@ -299,9 +289,7 @@ public class BudgetService implements IBudgetService{
         }
 
 
-        return existingBudget.stream().
-                map(budgetMapper::budgetDTO).
-                collect(Collectors.toList());
+        return existingBudget;
     }
 
 
@@ -316,9 +304,9 @@ public class BudgetService implements IBudgetService{
      * @throws ValidationException     If the provided date values are invalid
      */
     @Override
-    public List<BudgetDTO> getBudgetsByDateRange(String usernameOrEmail, String startDate, String endDate)
+    public List<Budget> getBudgetsByDateRange(String usernameOrEmail, String startDate, String endDate)
             throws EntityNotFoundException, ValidationException{
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot Get Budget");
         }
@@ -347,15 +335,13 @@ public class BudgetService implements IBudgetService{
             throw new EntityNotFoundException("Budget within Date range " + startDate + " and " + endDate + " Does Not Exist");
         }
 
-        return existingBudget.stream().
-                map(budgetMapper::budgetDTO).
-                collect(Collectors.toList());
+        return existingBudget;
     }
 
     @Override
-    public List<BudgetDTO> getBudgetsBefore(String usernameOrEmail, String endDate)
+    public List<Budget> getBudgetsBefore(String usernameOrEmail, String endDate)
             throws EntityNotFoundException, ValidationException{
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot Get Budget");
         }
@@ -381,15 +367,13 @@ public class BudgetService implements IBudgetService{
             throw new EntityNotFoundException("Budgets created before " + endDate + " Does Not Exist");
         }
 
-        return existingBudget.stream().
-                map(budgetMapper::budgetDTO).
-                collect(Collectors.toList());
+        return existingBudget;
     }
 
     @Override
-    public List<BudgetDTO> getBudgetsAfter(String usernameOrEmail, String startDate)
+    public List<Budget> getBudgetsAfter(String usernameOrEmail, String startDate)
             throws EntityNotFoundException, ValidationException{
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot Get Budget");
         }
@@ -415,9 +399,7 @@ public class BudgetService implements IBudgetService{
             throw new EntityNotFoundException("Budgets created after " + startDate + " Does Not Exist");
         }
 
-        return existingBudget.stream().
-                map(budgetMapper::budgetDTO).
-                collect(Collectors.toList());
+        return existingBudget;
     }
 
 
@@ -431,10 +413,10 @@ public class BudgetService implements IBudgetService{
      * @throws EntityNotFoundException if the user or budgets do not exist
      */
     @Override
-    public List<BudgetDTO> sortBudgetsBy(String usernameOrEmail, String sortBy)
+    public List<Budget> sortBudgetsBy(String usernameOrEmail, String sortBy)
             throws ValidationException, EntityNotFoundException {
 
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot Get Budget");
         }
@@ -462,9 +444,7 @@ public class BudgetService implements IBudgetService{
                     throw new ValidationException("Invalid SortBy value");
         }
 
-        return budgets.stream().
-                map(budgetMapper::budgetDTO).
-                collect(Collectors.toList());
+        return budgets;
     }
 
 
@@ -476,7 +456,7 @@ public class BudgetService implements IBudgetService{
      */
     @Override
     public void getAllBudgetAsJSONFile(String usernameOrEmail) throws EntityNotFoundException, IOException {
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot Get Budget");
         }
@@ -486,7 +466,7 @@ public class BudgetService implements IBudgetService{
             throw new EntityNotFoundException("User has not created any Budget");
         }
 
-        List<BudgetDTO> budget = existingBudget.get().stream().map(budgetMapper::budgetDTO).collect(Collectors.toList());
+        List<BudgetDTO> budget = existingBudget.get().stream().map(budgetMapper.INSTANCE::budgetDTO).collect(Collectors.toList());
 
         String outputFile = "src/main/resources/AllBudget.JSON";
         Gson gson = new Gson();
@@ -520,7 +500,7 @@ public class BudgetService implements IBudgetService{
     public void deleteBudget(String usernameOrEmail, long budgetId)
             throws EntityNotFoundException {
 
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if(user == null){
             throw new EntityNotFoundException("User Does Not Exist, Cannot Delete Budget");
         }

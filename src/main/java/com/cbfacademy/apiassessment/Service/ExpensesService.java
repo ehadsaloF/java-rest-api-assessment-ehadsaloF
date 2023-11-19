@@ -54,16 +54,16 @@ public class ExpensesService implements IExpensesService{
      * @throws ValidationException If the Expense parameters are not valid
      */
     @Override
-    public ExpensesDTO saveExpenses(String usernameOrEmail, long budgetId, Expenses expenses)
+    public Expenses saveExpenses(String usernameOrEmail, long budgetId, Expenses expenses)
             throws EntityNotFoundException, ValidationException {
 
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot Create Expense");
         }
 
-        Budget existingBudget = budgetMapper.toBudget(budgetService.getBudgetById(usernameOrEmail, budgetId));
+        Budget existingBudget = budgetService.getBudgetById(usernameOrEmail, budgetId);
         if (existingBudget == null) {
             throw new EntityNotFoundException("Budget Does Not Exist, Cannot create Expense");
         }
@@ -97,7 +97,7 @@ public class ExpensesService implements IExpensesService{
 
 
         // Save the expenses to the repository
-        return expensesMapper.INSTANCE.expensesDTO(expensesRepository.save(expenses));
+        return expensesRepository.save(expenses);
     }
 
 
@@ -111,11 +111,11 @@ public class ExpensesService implements IExpensesService{
      * @throws ValidationException If the Expense parameters are not valid
      */
     @Override
-    public ExpensesDTO saveExpenses(String usernameOrEmail, Expenses expenses)
+    public Expenses saveExpenses(String usernameOrEmail, Expenses expenses)
             throws EntityNotFoundException {
 
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot Create Expense");
         }
@@ -142,7 +142,7 @@ public class ExpensesService implements IExpensesService{
         }
 
         // Save the expenses to the repository
-        return expensesMapper.INSTANCE.expensesDTO(expensesRepository.save(expenses));
+        return expensesRepository.save(expenses);
 
     }
 
@@ -159,10 +159,10 @@ public class ExpensesService implements IExpensesService{
      * @throws ValidationException If the update or value is not valid
      */
     @Override
-    public ExpensesDTO updateExpensesByID(String usernameOrEmail, long expensesId, String update, String value)
+    public Expenses updateExpensesByID(String usernameOrEmail, long expensesId, String update, String value)
             throws ValidationException, EntityNotFoundException {
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot Update Expense");
         }
@@ -184,7 +184,7 @@ public class ExpensesService implements IExpensesService{
             }
             case "budget" ->{
                 // Check if Budget exists
-                Budget existingBudget = budgetMapper.toBudget(budgetService.getBudgetById(usernameOrEmail, Long.parseLong(value)));
+                Budget existingBudget = budgetService.getBudgetById(usernameOrEmail, Long.parseLong(value));
                 if (existingBudget == null) {
                     throw new EntityNotFoundException("Budget Does Not Exist, Cannot update Expense");
                 }
@@ -228,7 +228,7 @@ public class ExpensesService implements IExpensesService{
 
         expenses.setUpdatedAt();
 
-        return expensesMapper.INSTANCE.expensesDTO(expensesRepository.save(expenses));
+        return expensesRepository.save(expenses);
     }
 
 
@@ -241,9 +241,9 @@ public class ExpensesService implements IExpensesService{
      * @throws EntityNotFoundException If the user or expenses does not exist
      */
     @Override
-    public ExpensesDTO getExpensesById(String usernameOrEmail, long expensesId) throws EntityNotFoundException {
+    public Expenses getExpensesById(String usernameOrEmail, long expensesId) throws EntityNotFoundException {
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot get Expense");
         }
@@ -253,7 +253,7 @@ public class ExpensesService implements IExpensesService{
             throw new EntityNotFoundException("Expenses Does Not Exist");
         }
 
-        return expensesMapper.INSTANCE.expensesDTO(existingExpenses.get());
+        return existingExpenses.get();
     }
 
 
@@ -266,14 +266,14 @@ public class ExpensesService implements IExpensesService{
      * @throws EntityNotFoundException If the user, Budget or expenses does not exist
      */
     @Override
-    public List<ExpensesDTO> getExpensesByBudget(String usernameOrEmail, long budgetId) throws EntityNotFoundException {
+    public List<Expenses> getExpensesByBudget(String usernameOrEmail, long budgetId) throws EntityNotFoundException {
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot get Expense");
         }
 
-        Budget budget = budgetMapper.toBudget(budgetService.getBudgetById(usernameOrEmail, budgetId));
+        Budget budget = budgetService.getBudgetById(usernameOrEmail, budgetId);
         if (budget == null) {
             throw new EntityNotFoundException("Budget Does Not Exist, Cannot Get Expenses");
         }
@@ -283,9 +283,7 @@ public class ExpensesService implements IExpensesService{
             throw new EntityNotFoundException("No Expenses Associated With This Budget");
         }
 
-        return existingExpenses.stream().
-                map(expensesMapper::expensesDTO).
-                collect(Collectors.toList());
+        return existingExpenses;
     }
 
 
@@ -297,9 +295,9 @@ public class ExpensesService implements IExpensesService{
      * @throws EntityNotFoundException If the user or expenses does not exist
      */
     @Override
-    public List<ExpensesDTO> getAllExpenses(String usernameOrEmail) throws EntityNotFoundException {
+    public List<Expenses> getAllExpenses(String usernameOrEmail) throws EntityNotFoundException {
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot get Expense");
         }
@@ -309,9 +307,7 @@ public class ExpensesService implements IExpensesService{
             throw new EntityNotFoundException("Expenses Does Not Exist");
         }
 
-        return existingExpenses.stream().
-                map(expensesMapper::expensesDTO).
-                collect(Collectors.toList());
+        return existingExpenses;
     }
 
 
@@ -325,10 +321,10 @@ public class ExpensesService implements IExpensesService{
      * @throws ValidationException If the category is not valid
      */
     @Override
-    public List<ExpensesDTO> getExpensesByCategory(String usernameOrEmail, String category)
+    public List<Expenses> getExpensesByCategory(String usernameOrEmail, String category)
             throws EntityNotFoundException, ValidationException {
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot get Expense");
         }
@@ -339,9 +335,7 @@ public class ExpensesService implements IExpensesService{
         if (existingExpenses.isEmpty()) {
             throw new EntityNotFoundException("Expense with Category"+ category +" Does Not Exist");
         }
-        return existingExpenses.stream().
-                map(expensesMapper::expensesDTO).
-                collect(Collectors.toList());
+        return existingExpenses;
     }
 
 
@@ -356,10 +350,10 @@ public class ExpensesService implements IExpensesService{
      * @throws ValidationException If the minPrice or maxPrice is not valid
      */
     @Override
-    public List<ExpensesDTO> getExpensesInPriceRange(String usernameOrEmail, double minPrice, double maxPrice)
+    public List<Expenses> getExpensesInPriceRange(String usernameOrEmail, double minPrice, double maxPrice)
             throws EntityNotFoundException, ValidationException {
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot get Expense");
         }
@@ -378,16 +372,14 @@ public class ExpensesService implements IExpensesService{
         }
 
 
-        return existingExpenses.stream().
-                map(expensesMapper::expensesDTO).
-                collect(Collectors.toList());
+        return existingExpenses;
     }
 
     @Override
-    public List<ExpensesDTO> getExpensesGreaterThan(String usernameOrEmail, double minPrice)
+    public List<Expenses> getExpensesGreaterThan(String usernameOrEmail, double minPrice)
             throws EntityNotFoundException, ValidationException {
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot get Expense");
         }
@@ -406,16 +398,14 @@ public class ExpensesService implements IExpensesService{
         }
 
 
-        return existingExpenses.stream().
-                map(expensesMapper::expensesDTO).
-                collect(Collectors.toList());
+        return existingExpenses;
     }
 
     @Override
-    public List<ExpensesDTO> getExpensesLessThan(String usernameOrEmail, double maxPrice)
+    public List<Expenses> getExpensesLessThan(String usernameOrEmail, double maxPrice)
             throws EntityNotFoundException, ValidationException {
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot get Expense");
         }
@@ -434,9 +424,7 @@ public class ExpensesService implements IExpensesService{
         }
 
 
-        return existingExpenses.stream().
-                map(expensesMapper::expensesDTO).
-                collect(Collectors.toList());
+        return existingExpenses;
     }
 
     /**
@@ -450,10 +438,10 @@ public class ExpensesService implements IExpensesService{
      * @throws ValidationException     If the provided date values are invalid
      */
     @Override
-    public List<ExpensesDTO> getExpensesInDateRange(String usernameOrEmail, String startDate, String endDate)
+    public List<Expenses> getExpensesInDateRange(String usernameOrEmail, String startDate, String endDate)
             throws EntityNotFoundException, ValidationException {
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot get Expense");
         }
@@ -463,8 +451,6 @@ public class ExpensesService implements IExpensesService{
             throw new ValidationException("Invalid Date");
         }
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
-        // Parse the string to get a Date object
 
         Date parsedStartDate;
         Date parsedEndDate;
@@ -482,17 +468,15 @@ public class ExpensesService implements IExpensesService{
             throw new EntityNotFoundException("Expenses within Date range " + startDate + " and " + endDate + " Does Not Exist");
         }
 
-        return existingExpenses.stream().
-                map(expensesMapper::expensesDTO).
-                collect(Collectors.toList());
+        return existingExpenses;
     }
 
 
     @Override
-    public List<ExpensesDTO> getExpensesBefore(String usernameOrEmail, String endDate)
+    public List<Expenses> getExpensesBefore(String usernameOrEmail, String endDate)
             throws EntityNotFoundException, ValidationException{
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot get Expense");
         }
@@ -518,16 +502,14 @@ public class ExpensesService implements IExpensesService{
             throw new EntityNotFoundException("Expenses created before " + endDate + " Does Not Exist");
         }
 
-        return existingExpenses.stream().
-                map(expensesMapper::expensesDTO).
-                collect(Collectors.toList());
+        return existingExpenses;
     }
 
     @Override
-    public List<ExpensesDTO> getExpensesAfter(String usernameOrEmail, String startDate)
+    public List<Expenses> getExpensesAfter(String usernameOrEmail, String startDate)
             throws EntityNotFoundException, ValidationException{
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot get Expense");
         }
@@ -553,9 +535,7 @@ public class ExpensesService implements IExpensesService{
             throw new EntityNotFoundException("Expenses created after " + startDate + " Does Not Exist");
         }
 
-        return existingExpenses.stream().
-                map(expensesMapper::expensesDTO).
-                collect(Collectors.toList());
+        return existingExpenses;
     }
 
 
@@ -569,10 +549,10 @@ public class ExpensesService implements IExpensesService{
      * @throws EntityNotFoundException if the user or expenses do not exist
      */
     @Override
-    public List<ExpensesDTO> sortExpensesBy(String usernameOrEmail, String sortBy) throws ValidationException, EntityNotFoundException {
+    public List<Expenses> sortExpensesBy(String usernameOrEmail, String sortBy) throws ValidationException, EntityNotFoundException {
 
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot get Expense");
         }
@@ -600,7 +580,7 @@ public class ExpensesService implements IExpensesService{
                     throw new ValidationException("Invalid SortBy value");
         }
 
-        return expenses.stream().map(expensesMapper::expensesDTO).collect(Collectors.toList());
+        return expenses;
     }
 
 
@@ -613,7 +593,7 @@ public class ExpensesService implements IExpensesService{
     @Override
     public void getAllExpensesAsJSONFile(String usernameOrEmail) throws EntityNotFoundException, IOException {
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot get Expense");
         }
@@ -623,7 +603,7 @@ public class ExpensesService implements IExpensesService{
             throw new EntityNotFoundException("User has not created any Expenses");
         }
 
-        List<ExpensesDTO> expenses = existingExpenses.stream().map(expensesMapper::expensesDTO).collect(Collectors.toList());
+        List<ExpensesDTO> expenses = existingExpenses.stream().map(expensesMapper.INSTANCE::expensesDTO).collect(Collectors.toList());
 
         String outputFile = "src/main/resources/AllExpenses.JSON";
         Gson gson = new Gson();
@@ -655,7 +635,7 @@ public class ExpensesService implements IExpensesService{
     @Override
     public void deleteExpense(String usernameOrEmail, long ExpenseId) throws EntityNotFoundException  {
         // Check if the user exists
-        User user = userMapper.toUser(userService.getUserByUsernameOrEmail(usernameOrEmail));
+        User user = userService.getUserByUsernameOrEmail(usernameOrEmail);
         if (user == null) {
             throw new EntityNotFoundException("User Does Not Exist, Cannot delete Expense");
         }

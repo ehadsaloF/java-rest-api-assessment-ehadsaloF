@@ -1,16 +1,17 @@
 package com.cbfacademy.apiassessment.Service;
 
-import com.cbfacademy.apiassessment.DTO.BudgetDTO;
 import com.cbfacademy.apiassessment.DTO.BudgetSummary;
-import com.cbfacademy.apiassessment.DTO.ExpensesDTO;
 import com.cbfacademy.apiassessment.DTO.Summary;
-import jakarta.persistence.EntityNotFoundException;
+import com.cbfacademy.apiassessment.Entity.Budget;
+import com.cbfacademy.apiassessment.Entity.Expenses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SummaryService implements ISummaryService{
+@Service
+public class SummaryService implements ISummaryService {
 
     @Autowired
     private BudgetService budgetService;
@@ -19,55 +20,52 @@ public class SummaryService implements ISummaryService{
     private ExpensesService expensesService;
 
     @Override
-    public Summary getSummary(String usernameOrEmail) throws EntityNotFoundException {
-
+    public Summary getSummary(String usernameOrEmail) {
         Summary summary = new Summary();
 
-        List<BudgetDTO> budgets = budgetService.getAllBudgets(usernameOrEmail);
+        List<Budget> budgets = budgetService.getAllBudgets(usernameOrEmail);
 
-        if(budgets.isEmpty()){
-            throw new EntityNotFoundException("User Does Not Have Any budgets");
+        if (budgets.isEmpty()) {
+            // No budgets available, set empty list
+            summary.setBudgetSummaries(new ArrayList<>());
         }
+        else {
+            List<BudgetSummary> budgetSummaries = new ArrayList<>();
+            
 
-        List<BudgetSummary> budgetSummaries = new ArrayList<>();
+            for (Budget budget : budgets) {
+                BudgetSummary budgetSummary = new BudgetSummary();
+                budgetSummary.setBudgetId(budget.getId());
+                budgetSummary.setBudgetCategory(budget.getBudgetCategory().name());
+                budgetSummary.setBudgetSubcategory(budget.getBudgetSubcategory().name());
+                budgetSummary.setBudgetAmount(budget.getBudgetAmount());
 
-        double totalExpensesAmount = 0.0;
+                double amountSpent = 0;
 
-        for (BudgetDTO budget : budgets) {
-            BudgetSummary budgetSummary = new BudgetSummary();
-            budgetSummary.setBudgetId(budget.getId());
-            budgetSummary.setBudgetCategory(budget.getCategory());
-            budgetSummary.setBudgetSubcategory(budget.getSubcategory());
-            budgetSummary.setBudgetAmount(budget.getAmount());
+                List<Expenses> expensesByBudget = expensesService.getExpensesByBudget(usernameOrEmail, budget.getId());
 
-            double amountSpent = 0;
+                if (!expensesByBudget.isEmpty()) {
+                    amountSpent = expensesByBudget.stream().mapToDouble(Expenses::getExpenseAmount).sum();
+                }
 
-            List<ExpensesDTO> expensesByBudget = expensesService.getExpensesByBudget(usernameOrEmail, budget.getId());
+                double amountLeft = budget.getBudgetAmount() - amountSpent;
+                budgetSummary.setAmountLeft(amountLeft);
 
-            // Calculate amount left for each budget with connected expenses
-            if(expensesByBudget.isEmpty()){
-                amountSpent = 0;
+                budgetSummaries.add(budgetSummary);
             }
-            else {
-                amountSpent = expensesByBudget.stream().
-                        mapToDouble(ExpensesDTO::getAmount).sum();
-            }
-            double amountLeft = budget.getAmount() - amountSpent;
-            budgetSummary.setAmountLeft(amountLeft);
-
-            budgetSummaries.add(budgetSummary);
+            summary.setBudgetSummaries(budgetSummaries);
         }
 
-        List<ExpensesDTO> expensesDTOList = expensesService.getAllExpenses(usernameOrEmail);
-        if(expensesDTOList.isEmpty()){
-            throw new EntityNotFoundException("User Does Not Have Any Expenses");
+        // Handling expenses separately
+        List<Expenses> expensesList = expensesService.getAllExpenses(usernameOrEmail);
+        if (expensesList.isEmpty()) {
+            // No expenses available, set total expenses to zero
+            summary.setTotalExpensesAmount(0);
         }
-        double totalExpenseAmount = expensesDTOList.stream().mapToDouble(ExpensesDTO::getAmount).sum();
-
-        summary.setTotalExpensesAmount(totalExpenseAmount);
-
-        summary.setBudgetSummaries(budgetSummaries);
-
+        else {
+            double totalExpensesAmount = expensesList.stream().mapToDouble(Expenses::getExpenseAmount).sum();
+            summary.setTotalExpensesAmount(totalExpensesAmount);
+        }
 
         return summary;
     }

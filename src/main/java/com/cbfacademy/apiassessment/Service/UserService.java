@@ -7,6 +7,7 @@ import com.cbfacademy.apiassessment.Mappers.UserMapper;
 import com.cbfacademy.apiassessment.Repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.cbfacademy.apiassessment.Validators.ValidateArgs.isValidEmail;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +42,7 @@ public class UserService implements IUserService{
      * @throws EntityExistsException If a user with the same email or username already exists
      */
     @Override
-    public UserDTO saveUser(User user)
+    public User saveUser(User user)
             throws EntityExistsException{
         if(userRepository.findByEmail(user.getEmail()).isPresent()){
             throw new EntityExistsException("User with email: " + user.getEmail() + " already exist");
@@ -48,7 +51,10 @@ public class UserService implements IUserService{
             throw new EntityExistsException("User with username: " + user.getUsername() + " already exist");
         }
         user.setRole(UserRoles.USER);
-        return userMapper.INSTANCE.userDTO(userRepository.save(user));
+        if(!isValidEmail(user.getEmail())){
+            throw new ValidationException("Please Enter a valid Email");
+        }
+        return userRepository.save(user);
     }
 
 
@@ -61,15 +67,14 @@ public class UserService implements IUserService{
      * @throws EntityNotFoundException If the user does not exist
      */
     @Override
-    public UserDTO updateUser(String usernameOrEmail, String name)
+    public User updateUser(String usernameOrEmail, String name)
             throws EntityNotFoundException {
-        UserDTO userDTO = getUserByUsernameOrEmail(usernameOrEmail);
-        User existingUser = userMapper.INSTANCE.toUser(userDTO);
+        User existingUser = getUserByUsernameOrEmail(usernameOrEmail);
             if (existingUser != null) {
                 // Update the existing user with the new data
                 existingUser.setName(name);
                 existingUser.setUpdatedAt();
-                return userMapper.INSTANCE.userDTO(userRepository.save(existingUser));
+                return userRepository.save(existingUser);
             }
             throw new EntityNotFoundException("User Does Not Exist");
     }
@@ -83,7 +88,7 @@ public class UserService implements IUserService{
      * @throws EntityNotFoundException If the user does not exist
      */
     @Override
-    public UserDTO getUserByUsernameOrEmail(String usernameOrEmail)
+    public User getUserByUsernameOrEmail(String usernameOrEmail)
             throws EntityNotFoundException{
         Optional<User> existingUser = userRepository.findByUsername(usernameOrEmail);
 
@@ -94,7 +99,7 @@ public class UserService implements IUserService{
             throw new EntityNotFoundException("User Does Not Exist");
         }
 
-        return userMapper.INSTANCE.userDTO(existingUser.orElse(null));
+        return existingUser.orElse(null);
     }
 
 
@@ -106,7 +111,10 @@ public class UserService implements IUserService{
      */
     @Override
     public void getAllUsersAsJSONFile() throws IOException, EntityNotFoundException {
-        List<User> userList = userRepository.findAll();
+        List<UserDTO> userList = userRepository.findAll().stream().
+                map(userMapper.INSTANCE::userDTO).
+                collect(Collectors.toList());
+
         if(userList.isEmpty()) throw new EntityNotFoundException("No Users Found");
 
 
@@ -136,12 +144,11 @@ public class UserService implements IUserService{
      * @throws EntityNotFoundException - If no users are found
      */
     @Override
-    public List<UserDTO> getAllUsers() throws EntityNotFoundException {
+    public List<User> getAllUsers() throws EntityNotFoundException {
         List<User> users = userRepository.findAll();
         if(users.isEmpty()) throw new EntityNotFoundException("No Users Found");
-        return users.stream().
-                map(userMapper::userDTO).
-                collect(Collectors.toList());
+
+        return users;
     }
 
 
@@ -153,7 +160,7 @@ public class UserService implements IUserService{
      */
     @Override
     public void deleteUser(String usernameOrEmail) throws EntityNotFoundException{
-        User user = userMapper.INSTANCE.toUser(getUserByUsernameOrEmail(usernameOrEmail));
+        User user = getUserByUsernameOrEmail(usernameOrEmail);
         if(user == null){
             throw new EntityNotFoundException("User Does not Exist");
         }

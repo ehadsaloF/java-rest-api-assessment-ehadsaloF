@@ -11,10 +11,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IUserService {
-    UserDTO saveUser(User user) throws InsufficientResourcesException, EntityExistsException;
-    UserDTO updateUser(String usernameOrEmail, String name) throws EntityNotFoundException;
-    UserDTO getUserByUsernameOrEmail(String usernameOrEmail) throws EntityNotFoundException;
-    List<UserDTO> getAllUsers() throws EntityNotFoundException;
+    User saveUser(User user) throws InsufficientResourcesException, EntityExistsException;
+    User updateUser(String usernameOrEmail, String name) throws EntityNotFoundException;
+    User getUserByUsernameOrEmail(String usernameOrEmail) throws EntityNotFoundException;
+    List<User> getAllUsers() throws EntityNotFoundException;
     void getAllUsersAsJSONFile() throws IOException;
     void deleteUser(String usernameOrEmail)  throws EntityNotFoundException;
 
