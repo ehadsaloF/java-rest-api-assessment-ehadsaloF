@@ -2,6 +2,7 @@ package com.cbfacademy.apiassessment.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -43,7 +44,8 @@ public class Budget extends BaseEntity implements Serializable {
         setDescription(description);
     }
 
+
     public String toString() {
-        return "Budget(budgetAmount=" + this.getBudgetAmount() + ", budgetCategory=" + this.getBudgetCategory() + ", budgetSubcategory=" + this.getBudgetSubcategory() + ", description=" + this.getDescription() + ", expenses=" + this.getExpenses() + ")";
+        return "Budget(budgetAmount=" + this.getBudgetAmount() + ", budgetCategory=" + this.getBudgetCategory() + ", budgetSubcategory=" + this.getBudgetSubcategory() + ", description=" + this.getDescription() + ")";
     }
 }

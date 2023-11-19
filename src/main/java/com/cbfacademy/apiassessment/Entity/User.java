@@ -3,6 +3,8 @@ package com.cbfacademy.apiassessment.Entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +13,9 @@ import java.util.List;
 
 @Data
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Table(name = "users")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User extends BaseEntity implements Serializable {
@@ -48,20 +53,8 @@ public class User extends BaseEntity implements Serializable {
         this.rawPassword = rawPassword;
     }
 
-    public User() {
-    }
-
     public String toString() {
-        return "User(name=" + this.getName() + ", username=" + this.getUsername() + ", email=" + this.getEmail() + ", role=" + this.getRole() + ", rawPassword=" + this.getRawPassword() + ", budgets=" + this.getBudgets() + ", expenses=" + this.getExpenses() + ")";
+        return "User(name=" + this.getName() + ", username=" + this.getUsername() + ", email=" + this.getEmail() + ", role=" + this.getRole() + ", rawPassword=" + this.getRawPassword() + ")";
     }
 
 }
-//    @Column(name = "password")
-//    private String password;
-//
-//    // Method to encode and set the password
-//    public String encodePassword(String rawPassword) {
-//        PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-//        return passwordEncoder.encode(rawPassword);
-//    }
-//        this.password = encodePassword(rawPassword);
