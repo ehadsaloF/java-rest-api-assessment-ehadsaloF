@@ -41,8 +41,134 @@ spring.datasource.password=your_mysql_password
 
 The API will be accessible at `http://localhost:8080/swagger-ui/index.html#/`.
 
+## Schema Overview
+
+
+
+### Entities
+
+#### 1. Base Entity
+
+The `BaseEntity` class serves as the foundation for other entities within the application, providing common parameters and behaviors. Entities that extend BaseEntity inherit the common fields (Id, createdAt, updatedAt) and behaviors.
+
+#### 2. User
+
+The `User` entity represents a user in the system. It includes information such as the user's name, username, email, role and  associated budgets and expenses.
+The user has a one-to-many relationship with both the Budget and Expenses entities.
+
+#### 3. Expense
+
+The `Expense` entity captures represents individual expenses logged by users in the system. It includes details such as the amount, category, subcategory, description, and associations with users and budgets.
+The expense has a many-to-one relationship with both the Budget and User entities.
+
+#### 4. Budget
+
+The `Budget` entity represents a budget set by a user. It includes information such as the budget amount, category, subcategory, and associated expenses and user.
+The budget has a many-to-one relationship with the User entity and a one-to-many relationship with Expenses entity, allowing multiple expenses to be associated with a single budget.
+
+
+#### 5. SubCategories Enum
+
+The `SubCategories` enum is a comprehensive representation of various categories and subcategories related to the expense and budget entities. 
+
+##### Categories
+
+The `SubCategories` enum is organized into the following categories:
+
+- **Food**
+- **Transport**
+- **Utilities**
+- **Housing**
+- **Entertainment**
+- **Shopping**
+- **Savings**
+
+Each category encompasses various subcategories to provide a detailed breakdown of expenses or budgets.
+
+The **Food** category has the following subcategories:
+**Groceries**, **Restaurant**, **OnlineOrder**
+
+The **Transport** category has the following subcategories: 
+**PublicTransport**, **CarHailing**, **Fuel**, **CarPayments**, **CarInsurance**
+
+The **Utilities** category has the following subcategories:
+**Water**, **Electricity**, **Gas**, **Interne:**
+
+The **Housing** category has the following subcategories:
+**Rent**, **MortgagePayment**, **CouncilTax**, **Repairs**
+
+The **Entertainment** category has the following subcategories:
+**TVLicense**, **Streaming**, **Music**, **Outside** 
+
+The **Shopping** category has the following subcategories:
+**Gifts**, **Personal**, **Clothes**
+
+The **Savings** category has the following subcategories:
+**Investments**, **Basic**
+
+
+### DTOs (Data Transfer Objects)
+
+DTOs are used to transfer data between different layers of the application.
+
+#### 1. UserDTO
+
+`UserDTO` is a Data Transfer Object for the `User` entity. It is used to transfer user-related information, excluding sensitive details, between different parts of the application.
+
+#### 2. ExpenseDTO
+
+`ExpenseDTO` is a Data Transfer Object for the `Expense` entity. It facilitates the transfer of expense-related information.
+
+#### 3. BudgetDTO
+
+`BudgetDTO` is a Data Transfer Object for the `Budget` entity. It simplifies the transfer of budget-related data within the application.
+
+
+#### 4. Summary
+
+The `Summary` entity provides an overview of financial information, consolidating data related to expenses and budgets for a user.
+
+#### 5. BudgetSummary
+
+The `BudgetSummary` offers a summarized view of budget-related information. It includes details about the budgets, the amount spent (From expenses), and the budgets.
+
+
+
 
 ## Data Flow
+The Personal Finance API follows a structured flow for handling client requests. Below is an overview of how a typical request flows through the major components of the application.
+
+
+![Data Flow Diagram](https://github.com/cbfacademy/java-rest-api-assessment-ehadsaloF/blob/main/Blank%20diagram-4.png)
+
+1. **Controller:**
+   - The process begins when a client sends an HTTP request to the appropriate endpoint.
+   - The Controller receives the request, extracts relevant information, and prepares it for further processing.
+
+2. **Service:**
+   - The Controller delegates the request to the corresponding Service.
+   - The Service contains business logic and acts as an intermediary between the Controller and Repository.
+   - It performs additional processing or validation based on the request.
+
+3. **Repository:**
+   - The Service communicates with the Repository to perform database operations.
+   - The Repository handles the interaction with the database, executing queries, and returning results to the Service.
+
+4. **Database:**
+   - The Repository interacts with the underlying database to retrieve or update data based on the request.
+   - Database operations are executed, and the results are sent back to the Repository.
+
+5. **Service:**
+   - The Service receives the results from the Repository and processes them further if necessary.
+   - It may apply additional business logic, transformations, or aggregations before returning the data.
+
+6. **Controller:**
+   - The Controller receives the final response from the Service.
+   - It converts the raw data, if needed, into Data Transfer Objects (DTOs) to shape the response in a client-friendly format.
+
+7. **Client Response:**
+   - The Controller sends the response, in the form of DTOs, back to the client.
+
 
 
 ## Endpoints
